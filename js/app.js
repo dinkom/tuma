@@ -2,7 +2,7 @@
 import * as E from './economy.js';
 import { Music, Sfx } from './audio.js';
 
-const VERSION = '1.1.1';
+const VERSION = '1.1.2';
 const SAVE_KEY = 'tuma-save-v2';
 const $ = (q, el = document) => el.querySelector(q);
 const icon = r => `assets/icon/${E.RES[r].id}.webp`;
@@ -269,6 +269,26 @@ function stepDetail(d) {
 $('#dBack').addEventListener('click', showMap);
 $('#dPrev').addEventListener('click', () => stepDetail(-1));
 $('#dNext').addEventListener('click', () => stepDetail(1));
+// dulji dodir na pozadinu (ne na lokaciju ili kartu) vraća na selo
+{
+  let timer = null, start = null;
+  const cancel = () => { clearTimeout(timer); timer = null; };
+  village.addEventListener('pointerdown', e => {
+    if (view !== 'detail' || e.target.closest('.sprite, .plate, button')) return;
+    start = [e.clientX, e.clientY];
+    cancel();
+    timer = setTimeout(() => {
+      timer = null;
+      if (S.settings.vib && navigator.vibrate) navigator.vibrate(12);
+      showMap();
+    }, 550);
+  });
+  village.addEventListener('pointermove', e => {
+    if (timer && start && Math.hypot(e.clientX - start[0], e.clientY - start[1]) > 12) cancel();
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => village.addEventListener(ev, cancel));
+  village.addEventListener('scroll', cancel, { passive: true });
+}
 // povlačenje lijevo/desno u detalju
 {
   let sx = null, sy = 0;
