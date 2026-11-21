@@ -2,7 +2,7 @@
 import * as E from './economy.js';
 import { Music, Sfx } from './audio.js';
 
-const VERSION = '1.5.1';
+const VERSION = '1.5.2';
 const SAVE_KEY = 'tuma-save-v2';
 const $ = (q, el = document) => el.querySelector(q);
 const icon = r => `assets/icon/${E.RES[r].id}.webp`;
@@ -605,7 +605,7 @@ function setupParticles() {
 }
 
 // ---------- parallax ----------
-const layers = [[$('#bgSky'), 1.06, 0.02], [$('#bgMid'), 1.10, 0.04], [$('#bgFront'), 1.16, 0.075]];
+const layers = [[$('#bgSky'), 1.06, 0.015], [$('#bgMid'), 1.10, 0.06], [$('#bgFront'), 1.22, 0.15]];
 let tilt = { x: 0, y: 0 }, cur = { p: 0, x: 0, y: 0 };
 window.addEventListener('deviceorientation', e => {
   if (e.gamma == null) return;
@@ -619,11 +619,14 @@ window.addEventListener('pointermove', e => {
 function parallax() {
   const max = village.scrollHeight - village.clientHeight;
   const p = view === 'detail' && max > 0 ? village.scrollTop / max : 0.5;
-  cur.p += (p - cur.p) * 0.12; cur.x += (tilt.x - cur.x) * 0.06; cur.y += (tilt.y - cur.y) * 0.06;
+  // lagano samostalno njihanje (vidi se i kad mobitel miruje) + nagib mobitela
+  const t = performance.now() / 1000;
+  const sway = Math.sin(t / 6) * 0.35 + Math.sin(t / 2.7) * 0.08;
+  cur.p += (p - cur.p) * 0.12; cur.x += (tilt.x * 1.6 + sway - cur.x) * 0.05; cur.y += (tilt.y * 1.2 - cur.y) * 0.05;
   const H = innerHeight, W = innerWidth;
   for (const [el, sc, f] of layers) {
     const ty = (0.5 - cur.p) * 2 * f * H - cur.y * f * 0.35 * H;
-    const tx = -cur.x * f * 0.6 * W;
+    const tx = -Math.max(-1, Math.min(1, cur.x)) * f * 0.6 * W;
     el.style.transform = `translate3d(${tx.toFixed(1)}px, ${ty.toFixed(1)}px, 0) scale(${sc})`;
     if (el.id === 'bgMid') mapWrap.style.transform = `translate3d(${tx.toFixed(1)}px, ${ty.toFixed(1)}px, 0)`;
   }

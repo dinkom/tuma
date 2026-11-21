@@ -148,7 +148,7 @@ img { -webkit-user-drag: none; user-select: none; }
 }
 #bgSky { background-image: url(../assets/bg/sky.webp); transform: scale(1.06); }
 #bgMid { background-image: url(../assets/bg/mid.webp); transform: scale(1.10); }
-#bgFront { background-image: url(../assets/bg/front.webp); transform: scale(1.16); }
+#bgFront { background-image: url(../assets/bg/front.webp); transform: scale(1.22); }
 #nightTint {
   position: absolute; inset: 0; pointer-events: none; opacity: 0;
   background: linear-gradient(180deg, #0f1c4a 0%, #26366e 55%, #2d3a5e 100%);
