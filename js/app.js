@@ -2,8 +2,8 @@
 import * as E from './economy.js';
 import { Music, Sfx } from './audio.js';
 
-const VERSION = '1.0.0';
-const SAVE_KEY = 'tuma-save-v1';
+const VERSION = '1.1.0';
+const SAVE_KEY = 'tuma-save-v2';
 const $ = (q, el = document) => el.querySelector(q);
 const icon = r => `assets/icon/${E.RES[r].id}.webp`;
 const locImg = (i, t) => `assets/loc/${E.LOCS[i].id}_${t}.webp`;
@@ -63,6 +63,7 @@ const locEls = E.LOCS.map((L, i) => {
     <div class="stage">
       <button class="sprite" aria-label="${L.name}"><img alt=""></button>
       <img class="animal" src="${charImg(i)}" alt="">
+      <img class="silhouette" src="${charImg(i)}" alt="">
       <div class="lock">🔒</div>
     </div>
     <div class="plate">
@@ -71,7 +72,7 @@ const locEls = E.LOCS.map((L, i) => {
       <div class="barwrap"><div class="bar"><i></i></div><div class="barlbl"></div></div>
       <div class="btns">
         <button class="btn up"><span class="bl"></span><span class="costs"></span></button>
-        <button class="btn hire"><span class="bl">Zaposli: ${L.animal}</span><span class="costs"></span></button>
+        <button class="btn hire"><span class="bl">Zaposli ${L.animalAcc}</span><span class="costs"></span></button>
         <button class="btn unlock"><span class="bl">Otključaj</span><span class="costs"></span></button>
       </div>
       <div class="perk">${L.perk}</div>
@@ -104,7 +105,7 @@ function renderLocs() {
   const n = E.unlockedCount(S);
   E.LOCS.forEach((L, i) => {
     const r = locEls[i], st = S.locs[i];
-    const visible = st.unlocked || i === firstLocked();
+    const visible = i === selected && (st.unlocked || i === firstLocked());
     r.el.style.display = visible ? '' : 'none';
     if (!visible) return;
     r.el.classList.toggle('locked', !st.unlocked);
@@ -114,7 +115,7 @@ function renderLocs() {
     r.animal.classList.toggle('waiting', !st.hired);
     if (!st.unlocked) {
       r.lvl.textContent = '';
-      r.rate.innerHTML = `Ovdje bi mogao živjeti netko novi…`;
+      r.rate.innerHTML = `Netko novi bi se mogao doseliti ovamo…`;
       r.barwrap.style.display = 'none';
       r.up.style.display = 'none'; r.hire.style.display = 'none'; r.unlock.style.display = '';
       const c = E.unlockCost(S, i);
@@ -146,8 +147,6 @@ function renderLocs() {
       r.hire.disabled = !E.canPay(S, hc);
     } else r.hire.style.display = 'none';
   });
-  const hidden = E.LOCS.length - n - (firstLocked() >= 0 ? 1 : 0);
-  $('#teaser').textContent = hidden > 0 ? `Dublje u šumi čeka još ${hidden} ${hidden === 1 ? 'stanovnik' : 'stanovnika'}…` : n === E.LOCS.length ? 'Cijela šuma je tvoje selo. 🌿' : '';
 }
 const firstLocked = () => S.locs.findIndex(l => !l.unlocked);
 
@@ -163,6 +162,124 @@ function renderHud() {
   });
   seedChip.style.display = S.seeds > 0 || S.prestiges > 0 ? '' : 'none';
   seedChip.querySelector('b').textContent = E.fmt(S.seeds);
+}
+
+
+// ---------- karta sela ----------
+// položaj na livadi: x = središte (% širine), y = dno (% visine), s = veličina (perspektiva), side = strana životinje
+const SPOTS = [
+  { x: 28, y: 86, s: 1.0, side: 1 },
+  { x: 74, y: 82, s: 0.95, side: -1 },
+  { x: 50, y: 73, s: 0.88, side: 1 },
+  { x: 23, y: 67, s: 0.8, side: 1 },
+  { x: 77, y: 65, s: 0.78, side: -1 },
+  { x: 36, y: 58.5, s: 0.68, side: 1 },
+  { x: 67, y: 56, s: 0.64, side: -1 },
+];
+const village = $('#village');
+const mapIn = $('#mapIn');
+const mapWrap = document.createElement('div');
+mapWrap.id = 'mapWrap';
+mapIn.appendChild(mapWrap);
+const mapEls = E.LOCS.map((L, i) => {
+  const b = document.createElement('button');
+  b.className = 'mloc';
+  b.setAttribute('aria-label', L.name);
+  b.innerHTML = `<img class="l" alt=""><img class="a" src="${charImg(i)}" alt=""><span class="badge"></span>`;
+  b.addEventListener('click', () => openDetail(i));
+  mapWrap.appendChild(b);
+  const r = { b, l: $('img.l', b), a: $('img.a', b), badge: $('.badge', b), tier: 0 };
+  r.l.addEventListener('load', () => layoutMap());
+  return r;
+});
+const sign = document.createElement('button');
+sign.className = 'msign';
+sign.innerHTML = `<div class="post">🔒</div><span>Novo mjesto</span>`;
+sign.addEventListener('click', () => { const k = firstLocked(); if (k >= 0) openDetail(k); });
+mapWrap.appendChild(sign);
+
+function layoutMap() {
+  const W = mapIn.clientWidth, H = mapIn.clientHeight;
+  E.LOCS.forEach((L, i) => {
+    const r = mapEls[i], sp = SPOTS[i];
+    const nw = r.l.naturalWidth, nh = r.l.naturalHeight;
+    if (!nw) return;
+    const asp = nw / nh;
+    let h = H * 0.15 * sp.s, w = h * asp;
+    const maxW = W * 0.56 * sp.s;
+    if (w > maxW) { w = maxW; h = w / asp; }
+    r.l.style.width = w + 'px'; r.l.style.height = h + 'px';
+    r.b.style.left = sp.x + '%';
+    r.b.style.top = (sp.y / 100 * H - h) + 'px';
+    r.b.style.zIndex = Math.round(sp.y);
+    const ah = Math.max(H * 0.075 * sp.s, h * 0.62);
+    r.a.style.height = ah + 'px';
+    r.a.style.left = sp.side > 0 ? (w - ah * 0.25) + 'px' : (-ah * 0.5) + 'px';
+    r.a.style.animationDelay = (-i * 0.7) + 's';
+  });
+  const k = firstLocked();
+  if (k >= 0) {
+    const sp = SPOTS[k];
+    sign.style.left = sp.x + '%';
+    sign.style.top = (sp.y / 100 * H - 104) + 'px';
+    sign.style.zIndex = Math.round(sp.y);
+  }
+}
+function renderMap(force) {
+  let relayout = force;
+  E.LOCS.forEach((L, i) => {
+    const r = mapEls[i], st = S.locs[i];
+    r.b.style.display = st.unlocked ? '' : 'none';
+    if (!st.unlocked) return;
+    const t = E.tierOf(st.level);
+    if (t !== r.tier) { r.tier = t; r.l.src = locImg(i, t); relayout = true; }
+    r.a.style.display = st.hired ? '' : 'none';
+    const ready = E.canPay(S, E.upgradeCost(S, i, 1)) || (!st.hired && E.canPay(S, E.hireCost(S, i)));
+    r.badge.textContent = st.level;
+    r.badge.classList.toggle('ready', ready);
+  });
+  const k = firstLocked();
+  sign.style.display = k >= 0 ? '' : 'none';
+  if (k >= 0) sign.classList.toggle('ready', E.canPay(S, E.unlockCost(S, k)));
+  if (relayout) layoutMap();
+}
+window.addEventListener('resize', () => layoutMap());
+
+// ---------- prikaz: karta ili detalj ----------
+let view = 'map', selected = 0;
+function showMap() {
+  view = 'map';
+  document.body.classList.add('view-map'); document.body.classList.remove('view-detail');
+  renderMap(true);
+}
+function openDetail(i) {
+  selected = i; view = 'detail';
+  document.body.classList.add('view-detail'); document.body.classList.remove('view-map');
+  renderLocs();
+  village.scrollTo({ top: 0 });
+}
+function detailOrder() {
+  const k = firstLocked();
+  return E.LOCS.map((_, i) => i).filter(i => S.locs[i].unlocked || i === k);
+}
+function stepDetail(d) {
+  const ord = detailOrder();
+  const p = ord.indexOf(selected);
+  openDetail(ord[(p + d + ord.length) % ord.length]);
+}
+$('#dBack').addEventListener('click', showMap);
+$('#dPrev').addEventListener('click', () => stepDetail(-1));
+$('#dNext').addEventListener('click', () => stepDetail(1));
+// povlačenje lijevo/desno u detalju
+{
+  let sx = null, sy = 0;
+  village.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+  village.addEventListener('touchend', e => {
+    if (sx == null) return;
+    const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    sx = null;
+    if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) stepDetail(dx < 0 ? 1 : -1);
+  }, { passive: true });
 }
 
 // ---------- dodir ----------
@@ -181,7 +298,7 @@ function bindTap(btn, i) {
 function collect(i, x, y) {
   if (!S.locs[i].unlocked) return;
   const v = E.tapOf(S, i);
-  S.res[E.LOCS[i].res] += v;
+  E.gain(S, E.LOCS[i].res, v);
   S.taps++;
   const sp = locEls[i].sprite;
   sp.classList.remove('squish'); void sp.offsetWidth; sp.classList.add('squish');
@@ -233,7 +350,7 @@ function doUpgrade(i) {
   const crossed = E.MILESTONES.filter(m => m > before && m <= st.level);
   if (tierAfter !== tierBefore) {
     sfx.big();
-    toast(`${E.LOCS[i].name} je narasla!`, locImg(i, tierAfter));
+    toast(`${E.LOCS[i].name} je ${E.byG(E.LOCS[i].g, 'narastao', 'narasla')}!`, locImg(i, tierAfter));
     setTimeout(() => sparkles(locEls[i].sprite, 22), 60);
   } else if (crossed.length) {
     toast(`${E.LOCS[i].name}: proizvodnja ×${2 ** crossed.length}`, icon(E.LOCS[i].res));
@@ -245,7 +362,7 @@ function doHire(i) {
   if (!E.pay(S, E.hireCost(S, i))) return;
   S.locs[i].hired = true;
   sfx.big();
-  toast(`${E.LOCS[i].animal} sad skuplja sam!`, charImg(i));
+  toast(`${E.LOCS[i].animal} sad ${E.byG(E.LOCS[i].ag, 'skuplja sam', 'skuplja sama')}!`, charImg(i));
   sparkles(locEls[i].animal, 12);
   dirty = true;
 }
@@ -255,9 +372,9 @@ function doUnlock(i) {
   S.locs[i].level = 1;
   S.best = Math.max(S.best || 0, E.unlockedCount(S));
   sfx.big();
-  toast(`Novi susjed: ${E.LOCS[i].animal}!`, charImg(i));
-  renderLocs();
-  setTimeout(() => { locEls[i].el.scrollIntoView({ behavior: 'smooth', block: 'center' }); sparkles(locEls[i].sprite, 24); }, 80);
+  toast(`${E.byG(E.LOCS[i].ag, 'Novi susjed', 'Nova susjeda')}: ${E.LOCS[i].animal}!`, charImg(i));
+  renderLocs(); renderMap(true);
+  setTimeout(() => sparkles(locEls[i].sprite, 24), 80);
   dirty = true;
 }
 
@@ -285,9 +402,11 @@ function closeModal() { $('#modal').classList.add('hidden'); }
 
 // ---------- listovi (izbornici) ----------
 let openSheet = '';
-document.querySelectorAll('#tabs button').forEach(b => b.addEventListener('click', () => setSheet(b.dataset.sheet)));
+document.querySelectorAll('#tabs button').forEach(b => b.addEventListener('click', () => {
+  if (!b.dataset.sheet) { setSheet(''); showMap(); } else setSheet(b.dataset.sheet);
+}));
 function setSheet(name) {
-  if (name === openSheet) name = '';
+  if (name && name === openSheet) name = '';
   openSheet = name;
   document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.sheet === name));
   document.querySelectorAll('.sheet').forEach(s => s.classList.toggle('open', s.id === 'sheet-' + name));
@@ -328,15 +447,15 @@ function renderSpring() {
   const hrs = b.hours >= 1 ? `${Math.floor(b.hours)} h ${Math.floor((b.hours % 1) * 60)} min` : `${Math.floor(b.hours * 60)} min`;
   $('#springBox').innerHTML = `
     <div class="brk">
-      <div><span>Dokle si stigao (${b.stage} od 7)</span><b>+${b.a}</b></div>
-      <div><span>Sve nadogradnje (${b.levels} razina)</span><b>+${b.b}</b></div>
+      <div><span>Dokle je selo stiglo (${b.stage} od 7)</span><b>+${b.a}</b></div>
+      <div><span>Koliko je selo proizvelo</span><b>+${b.b}</b></div>
       <div><span>Vrijeme ovog proljeća (${hrs})</span><b>+${b.c}</b></div>
       <div class="tot"><span>Dobit ćeš</span><span><img src="assets/icon/seed.webp" alt=""> ${b.total}</span></div>
     </div>
     ${can ? '' : '<p class="hint">Novo proljeće postaje moguće kad otključaš Kamenolom.</p>'}
     <button class="btn bigbtn" id="btnSpring" ${can ? '' : 'disabled'}>Započni novo proljeće</button>`;
   $('#btnSpring').onclick = () => modal(
-    `<img class="hero" src="assets/icon/seed.webp" alt=""><h3>Novo proljeće?</h3><p>Resursi, razine i istraživanja kreću ispočetka, a ti dobivaš <b>${b.total}</b> zlatnog sjemena za trajne pojačivače.</p>`,
+    `<img class="hero" src="assets/icon/seed.webp" alt=""><h3>Novo proljeće?</h3><p>Resursi, razine i istraživanja kreću ispočetka, a ti dobivaš <b>${E.zrna(b.total)}</b> zlatnog sjemena za trajne pojačivače.</p>`,
     [['Ne još', 'ghost'], ['Da, novo proljeće', '', doPrestige]]);
   $('#seedBal').innerHTML = `<span class="cost" style="background:#fff3cf;color:#8a6142"><img src="assets/icon/seed.webp" alt="">${E.fmt(S.seeds)}</span>`;
   $('#shopList').innerHTML = E.SHOP.map(R => {
@@ -359,9 +478,9 @@ function doPrestige() {
   save();
   sfx.big();
   setSheet('');
+  showMap();
   renderAll();
-  $('#village').scrollTo({ top: 0 });
-  toast(`Novo proljeće! +${b.total} zlatnog sjemena`, 'assets/icon/seed.webp');
+  toast(`Novo proljeće! +${E.zrna(b.total)} zlatnog sjemena`, 'assets/icon/seed.webp');
 }
 
 function renderSettings() {
@@ -370,7 +489,7 @@ function renderSettings() {
   $('#setVib').checked = S.settings.vib;
   document.querySelectorAll('#setTime button').forEach(b => b.classList.toggle('on', b.dataset.v === S.settings.time));
   const rt = S.runTime / 3600;
-  $('#stats').innerHTML = `Dodira: <b>${E.fmt(S.taps)}</b><br>Ovo proljeće traje: <b>${Math.floor(rt)} h ${Math.floor((rt % 1) * 60)} min</b><br>Proljeća: <b>${S.prestiges || 0}</b><br>Ukupno zlatnog sjemena: <b>${E.fmt(S.seedsTotal || 0)}</b>`;
+  $('#stats').innerHTML = `Dodira: <b>${E.fmt(S.taps)}</b><br>Ovo proljeće traje: <b>${Math.floor(rt)} h ${Math.floor((rt % 1) * 60)} min</b><br>Proljeća: <b>${S.prestiges || 0}</b><br>Ukupno zlatnog sjemena: <b>${E.zrna(S.seedsTotal || 0)}</b>`;
   $('#ver').textContent = 'Tuma ' + VERSION;
 }
 $('#setMusic').addEventListener('input', e => { S.settings.music = +e.target.value; music.setVolume(S.settings.music); });
@@ -442,7 +561,6 @@ function setupParticles() {
 
 // ---------- parallax ----------
 const layers = [[$('#bgSky'), 1.06, 0.02], [$('#bgMid'), 1.10, 0.04], [$('#bgFront'), 1.16, 0.075]];
-const village = $('#village');
 let tilt = { x: 0, y: 0 }, cur = { p: 0, x: 0, y: 0 };
 window.addEventListener('deviceorientation', e => {
   if (e.gamma == null) return;
@@ -455,13 +573,14 @@ window.addEventListener('pointermove', e => {
 });
 function parallax() {
   const max = village.scrollHeight - village.clientHeight;
-  const p = max > 0 ? village.scrollTop / max : 0;
+  const p = view === 'detail' && max > 0 ? village.scrollTop / max : 0.5;
   cur.p += (p - cur.p) * 0.12; cur.x += (tilt.x - cur.x) * 0.06; cur.y += (tilt.y - cur.y) * 0.06;
   const H = innerHeight, W = innerWidth;
   for (const [el, sc, f] of layers) {
     const ty = (0.5 - cur.p) * 2 * f * H - cur.y * f * 0.35 * H;
     const tx = -cur.x * f * 0.6 * W;
     el.style.transform = `translate3d(${tx.toFixed(1)}px, ${ty.toFixed(1)}px, 0) scale(${sc})`;
+    if (el.id === 'bgMid') mapWrap.style.transform = `translate3d(${tx.toFixed(1)}px, ${ty.toFixed(1)}px, 0)`;
   }
 }
 
@@ -478,7 +597,7 @@ function applyAway(seconds) {
   const t = seconds / 3600;
   const tt = t >= 1 ? `${Math.floor(t)} h ${Math.floor((t % 1) * 60)} min` : `${Math.max(1, Math.floor(t * 60))} min`;
   const capNote = seconds > capS ? `<p class="hint">Smočnica je bila puna nakon ${E.offlineCapHours(S).toFixed(1).replace('.', ',')} h. Veća Žirnica i istraživanja daju više mjesta.</p>` : '';
-  pendingAway = `<img class="hero" src="${charImg(0)}" alt=""><h3>Dobro došao natrag!</h3><p>Dok te nije bilo (${tt}) seljani su skupili:</p>
+  pendingAway = `<img class="hero" src="${charImg(0)}" alt=""><h3>Opet si tu!</h3><p>Dok te nije bilo (${tt}) seljani su skupili:</p>
     <div class="gains">${gains.map(([i, g]) => `<span><img src="${icon(i)}" alt="">+${E.fmt(g)}</span>`).join('')}</div>${capNote}`;
   if (started) showAway();
 }
@@ -495,7 +614,7 @@ function frame(now) {
   uiT += dt; saveT += dt;
   if (uiT > 0.25 || dirty) {
     uiT = 0; dirty = false;
-    renderHud(); renderLocs();
+    renderHud(); renderLocs(); renderMap();
     if (openSheet === 'research' || openSheet === 'spring') renderSheetLive();
   }
   if (saveT > 5) { saveT = 0; save(); }
@@ -508,7 +627,7 @@ function renderSheetLive() {
   if (n - sheetT < 1000) return;
   sheetT = n; renderSheet();
 }
-function renderAll() { renderHud(); renderLocs(); checkNight(true); }
+function renderAll() { renderHud(); renderLocs(); renderMap(true); checkNight(true); }
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) { save(); music.pauseAll(); }
@@ -522,6 +641,7 @@ setInterval(() => checkNight(), 20000);
   const away = (Date.now() - (S.lastTick || Date.now())) / 1000;
   if (away > 30) applyAway(away);
   S.lastTick = Date.now();
+  showMap();
   renderAll();
   requestAnimationFrame(t => { last = t; requestAnimationFrame(frame); });
 })();

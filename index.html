@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="assets/icon/apple-touch-icon.png">
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="intro">
+<body class="intro view-map">
 
 <div id="scene" aria-hidden="true">
   <div class="layer" id="bgSky"></div>
@@ -28,9 +28,16 @@
   </div>
 </header>
 
+<main id="map"><div id="mapIn"></div></main>
+
+<div id="detailBar">
+  <button id="dPrev" aria-label="Prethodna">‹</button>
+  <button id="dBack"><img src="assets/icon/mushroom.webp" alt="">Selo</button>
+  <button id="dNext" aria-label="Sljedeća">›</button>
+</div>
+
 <main id="village">
   <div id="locList"></div>
-  <div id="teaser"></div>
 </main>
 
 

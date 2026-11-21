@@ -93,22 +93,24 @@ body.night .layer { filter: saturate(.72) brightness(.92); }
 #village {
   position: fixed; left: 0; right: 0; top: 0; bottom: 0; z-index: 2;
   overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;
-  padding: calc(var(--hud-h) + 22vh) 10px calc(var(--nav-h) + var(--safe-b) + 40px);
+  padding: calc(var(--hud-h) + 56px) 10px calc(var(--nav-h) + var(--safe-b) + 18px);
+  display: flex; flex-direction: column;
   scrollbar-width: none;
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, transparent calc(var(--hud-h) - 6px), #000 calc(var(--hud-h) + 26px));
   mask-image: linear-gradient(to bottom, transparent 0, transparent calc(var(--hud-h) - 6px), #000 calc(var(--hud-h) + 26px));
 }
 #village::-webkit-scrollbar { display: none; }
-.loc { display: flex; flex-direction: column; align-items: center; margin: 0 auto 34px; max-width: 420px; }
+#locList { margin-top: auto; }
+.loc { display: flex; flex-direction: column; align-items: center; margin: 0 auto 4px; max-width: 420px; }
 .stage { position: relative; display: flex; align-items: flex-end; justify-content: center; width: 100%; min-height: 150px; }
 .sprite {
   background: none; padding: 0; position: relative; touch-action: manipulation;
   filter: drop-shadow(0 8px 10px rgba(50, 35, 10, .28));
   transition: filter 1s;
 }
-.sprite img { display: block; height: 130px; max-width: 80vw; object-fit: contain; pointer-events: none; }
-.loc[data-tier="2"] .sprite img { height: 140px; }
-.loc[data-tier="3"] .sprite img { height: 148px; }
+.sprite img { display: block; height: 150px; max-width: 80vw; object-fit: contain; pointer-events: none; }
+.loc[data-tier="2"] .sprite img { height: 160px; }
+.loc[data-tier="3"] .sprite img { height: 170px; }
 .sprite.squish { animation: squish .16s ease; }
 @keyframes squish { 40% { transform: scale(.94, .9) translateY(3px); } }
 body.night .sprite { filter: drop-shadow(0 6px 10px rgba(0,0,20,.4)) brightness(.86) saturate(.9); }
@@ -164,7 +166,7 @@ body.night .animal { filter: drop-shadow(0 5px 6px rgba(0,0,20,.4)) brightness(.
 .cost img { width: 17px; height: 17px; }
 .cost.no { color: #ffe0d6; text-decoration: line-through; text-decoration-thickness: 1px; }
 .perk { font-size: 12px; color: var(--bark2); margin-top: 8px; font-style: italic; }
-#teaser { text-align: center; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,.5); font-style: italic; margin: 10px 0 40px; }
+
 
 .float {
   position: fixed; z-index: 20; pointer-events: none; font-weight: 900; font-size: 18px;
@@ -278,3 +280,55 @@ body.intro #hud, body.intro #village, body.intro #tabs, body.intro #buyMode { op
 .toast { background: rgba(255,248,234,.97); border-radius: 14px; padding: 8px 14px; box-shadow: var(--shadow); font-weight: 800; font-size: 14px; display: flex; align-items: center; gap: 6px; animation: toast 3s ease forwards; }
 .toast img { width: 26px; height: 26px; }
 @keyframes toast { 0% { transform: translateY(-12px); opacity: 0; } 10%, 85% { transform: none; opacity: 1; } 100% { transform: translateY(-8px); opacity: 0; } }
+
+/* ---------- karta sela ---------- */
+#map { position: fixed; inset: 0; z-index: 2; pointer-events: none; transition: opacity .45s ease; }
+#mapIn { position: absolute; left: 50%; top: 0; bottom: 0; width: min(100vw, 62vh); transform: translateX(-50%); }
+#mapWrap { position: absolute; inset: 0; will-change: transform; }
+.mloc {
+  position: absolute; transform: translateX(-50%); background: none; padding: 0;
+  pointer-events: auto; filter: drop-shadow(0 7px 8px rgba(50,35,10,.3));
+  transition: filter 1s, opacity .6s;
+}
+.mloc img.l { display: block; pointer-events: none; }
+.mloc img.a { position: absolute; bottom: -4px; pointer-events: none; animation: bob 2.8s ease-in-out infinite; transform-origin: bottom center; }
+.mloc .badge {
+  position: absolute; top: -6px; right: 4%; min-width: 26px; height: 26px; padding: 0 6px; border-radius: 13px;
+  background: rgba(255,248,234,.95); color: var(--bark); font-weight: 900; font-size: 12.5px;
+  display: grid; place-items: center; box-shadow: 0 2px 6px rgba(50,35,10,.3);
+}
+.mloc .badge.ready { background: linear-gradient(180deg, #8cc25a, #6f9a3e); color: #fff; }
+.mloc .badge.ready::after { content: '▲'; font-size: 9px; margin-left: 2px; }
+.mloc:active { transform: translateX(-50%) scale(.96); }
+body.night .mloc { filter: drop-shadow(0 6px 8px rgba(0,0,20,.45)) brightness(.86) saturate(.9); }
+.msign {
+  position: absolute; transform: translate(-50%, 0); pointer-events: auto;
+  display: flex; flex-direction: column; align-items: center; gap: 4px; background: none;
+}
+.msign .post {
+  width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; font-size: 26px;
+  background: rgba(255,248,234,.9); box-shadow: 0 4px 12px rgba(50,35,10,.3); animation: breathe 2.6s ease-in-out infinite;
+}
+.msign.ready .post { background: linear-gradient(180deg, #a6d77a, #6f9a3e); box-shadow: 0 0 0 5px rgba(166,215,122,.45), 0 4px 12px rgba(50,35,10,.3); }
+.msign span { background: rgba(255,248,234,.92); border-radius: 10px; padding: 2px 9px; font-size: 12px; font-weight: 800; box-shadow: 0 2px 6px rgba(50,35,10,.2); }
+@keyframes breathe { 50% { transform: scale(1.07); } }
+body.view-detail #map { opacity: 0; }
+body.view-detail #map * { pointer-events: none !important; }
+body.view-map #village, body.view-map #detailBar { opacity: 0; pointer-events: none; }
+body.view-map #buyMode { visibility: hidden; }
+#village, #detailBar { transition: opacity .45s ease; }
+
+#detailBar {
+  position: fixed; z-index: 5; left: 50%; transform: translateX(-50%); top: calc(var(--hud-h) + 2px);
+  display: flex; gap: 6px; align-items: center;
+}
+#detailBar button {
+  height: 40px; min-width: 44px; border-radius: 14px; background: rgba(255,248,234,.94); box-shadow: 0 2px 8px rgba(70,45,20,.18);
+  font-weight: 900; font-size: 22px; color: var(--bark); display: flex; align-items: center; justify-content: center; gap: 4px; padding: 0 12px;
+}
+#detailBar #dBack { font-size: 14px; }
+#detailBar #dBack img { width: 24px; height: 24px; }
+.silhouette { display: none; height: 120px; filter: brightness(0) opacity(.28); pointer-events: none; }
+.loc.locked .sprite img { display: none; }
+.loc.locked .silhouette { display: block; }
+.loc.locked .sprite { min-height: 120px; display: flex; align-items: flex-end; }

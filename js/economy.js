@@ -11,26 +11,28 @@ export const RES = [
 ];
 
 export const LOCS = [
-  { id: 'hedgehog', res: 0, name: 'Gljivarnica', animal: 'Ježić Pero',
-    perk: 'Najvrjednije gljive u šumi. Osnova svega.' },
-  { id: 'squirrel', res: 1, name: 'Žirnica', animal: 'Vjeverica Vida',
-    perk: 'Veće skladište: dulja zarada dok te nema' },
-  { id: 'badger', res: 2, name: 'Kamenolom', animal: 'Jazavac Jura',
-    perk: 'Kamen za gradnju: jeftinije nadogradnje' },
-  { id: 'fox', res: 3, name: 'Tržnica', animal: 'Lisica Lina',
-    perk: 'Trgovina: veća proizvodnja cijelog sela' },
-  { id: 'bear', res: 4, name: 'Pčelinjak', animal: 'Medo Brundo',
-    perk: 'Med daje snagu: jači dodir' },
-  { id: 'owl', res: 5, name: 'Knjižnica', animal: 'Sova Sofija',
-    perk: 'Otključava istraživanja' },
-  { id: 'tit', res: 6, name: 'Pošta', animal: 'Sjenica Seka',
-    perk: 'Glasnici: brže automatsko skupljanje' },
+  { id: 'hedgehog', res: 0, name: 'Gljivarnica', g: 'f', animal: 'Ježić Pero', animalAcc: 'Ježića Peru', ag: 'm',
+    perk: 'Najbolje gljive u šumi. Temelj cijelog sela.' },
+  { id: 'squirrel', res: 1, name: 'Žirnica', g: 'f', animal: 'Vjeverica Vida', animalAcc: 'Vjevericu Vidu', ag: 'f',
+    perk: 'Veće skladište: selo dulje zarađuje dok te nema.' },
+  { id: 'badger', res: 2, name: 'Kamenolom', g: 'm', animal: 'Jazavac Jura', animalAcc: 'Jazavca Juru', ag: 'm',
+    perk: 'Kamen za gradnju: sve nadogradnje su jeftinije.' },
+  { id: 'fox', res: 3, name: 'Tržnica', g: 'f', animal: 'Lisica Lina', animalAcc: 'Lisicu Linu', ag: 'f',
+    perk: 'Trgovina: cijelo selo više proizvodi.' },
+  { id: 'bear', res: 4, name: 'Pčelinjak', g: 'm', animal: 'Medo Brundo', animalAcc: 'Medu Brundu', ag: 'm',
+    perk: 'Med daje snagu: dodir više vrijedi.' },
+  { id: 'owl', res: 5, name: 'Knjižnica', g: 'f', animal: 'Sova Sofija', animalAcc: 'Sovu Sofiju', ag: 'f',
+    perk: 'Otključava istraživanja.' },
+  { id: 'tit', res: 6, name: 'Pošta', g: 'f', animal: 'Sjenica Seka', animalAcc: 'Sjenicu Seku', ag: 'f',
+    perk: 'Glasnici: brže automatsko skupljanje.' },
 ];
+// rod: g(loc, 'narastao', 'narasla')
+export const byG = (x, m, f) => (x === 'f' ? f : m);
 
 const PROD = [1, 1, 1, 1, 1, 1, 1];          // po razini u sekundi
 const UP_BASE = [5, 8, 12, 18, 27, 40, 60];   // osnovna cijena nadogradnje
-const UP_GROWTH = 1.16;
-const UNLOCK = [0, 100, 1500, 30000, 8e5, 2.5e7, 8e8];
+const UP_GROWTH = 1.17;
+const UNLOCK = [0, 100, 3000, 1.5e5, 1e7, 1e9, 1.5e11];
 const HIRE = [15, 60, 300, 1500, 8000, 40000, 2e5];
 export const MILESTONES = [10, 25, 50, 75, 100, 150, 200, 250, 300, 400, 500, 750, 1000];
 export const TIERS = [1, 10, 25]; // razine od kojih se mijenja izgled
@@ -43,10 +45,10 @@ export const RESEARCH = [
 ];
 
 export const SHOP = [
-  { id: 'soil', name: 'Plodno tlo', desc: '+25% sva proizvodnja, zauvijek', base: 2, g: 1.55, max: 100 },
-  { id: 'paws', name: 'Jake šape', desc: '+50% snaga dodira, zauvijek', base: 2, g: 1.55, max: 100 },
+  { id: 'soil', name: 'Plodno tlo', desc: 'Sva proizvodnja ×1,5 (množi se), zauvijek', base: 3, g: 1.6, max: 200 },
+  { id: 'paws', name: 'Jake šape', desc: 'Snaga dodira ×1,5 (množi se), zauvijek', base: 2, g: 1.6, max: 200 },
   { id: 'cellar', name: 'Velika smočnica', desc: '+2 h zarade dok te nema', base: 3, g: 1.8, max: 6 },
-  { id: 'dawn', name: 'Rano buđenje', desc: 'Novo proljeće počinje s još jednom otvorenom lokacijom', base: 6, g: 2.6, max: 3 },
+  { id: 'dawn', name: 'Rano buđenje', desc: 'Novo proljeće počinje s još jednom otvorenom lokacijom', base: 8, g: 3, max: 2 },
   { id: 'helpers', name: 'Stari prijatelji', desc: '−20% cijena zapošljavanja', base: 4, g: 2.0, max: 4 },
 ];
 
@@ -55,6 +57,7 @@ export function newRun(state, now = Date.now()) {
   const s = {
     v: 1,
     res: RES.map(() => 0),
+    earned: RES.map(() => 0),   // ukupno proizvedeno u ovom proljeću
     locs: LOCS.map((_, i) => ({ unlocked: i <= dawn, level: i <= dawn ? 1 : 0, hired: dawn > 0 && i === 0 })),
     research: { tap: 0, prod: 0, cellar: 0, mail: 0 },
     shop: state?.shop ? { ...state.shop } : { soil: 0, paws: 0, cellar: 0, dawn: 0, helpers: 0 },
@@ -83,10 +86,10 @@ export function nextMilestone(level) { return MILESTONES.find(t => t > level); }
 const lv = (s, i) => (s.locs[i].unlocked ? s.locs[i].level : 0);
 
 export function globalMult(s) {
-  return (1 + 0.25 * s.shop.soil) * (1 + 0.10 * s.research.prod) * (1 + 0.015 * lv(s, 3));
+  return Math.pow(1.5, s.shop.soil) * (1 + 0.10 * s.research.prod) * (1 + 0.015 * lv(s, 3));
 }
 export function autoMult(s) { return (1 + 0.03 * lv(s, 6)) * (1 + 0.15 * s.research.mail); }
-export function tapMult(s) { return (1 + 0.5 * s.shop.paws) * (1 + 0.25 * s.research.tap) * (1 + 0.04 * lv(s, 4)); }
+export function tapMult(s) { return Math.pow(1.5, s.shop.paws) * (1 + 0.25 * s.research.tap) * (1 + 0.04 * lv(s, 4)); }
 export function costMult(s) { return Math.max(0.55, 1 - 0.005 * lv(s, 2)); }
 export function offlineCapHours(s) {
   return Math.min(24, 2 + 0.08 * lv(s, 1) + s.research.cellar + 2 * s.shop.cellar);
@@ -152,20 +155,25 @@ export function unlockedCount(s) { return s.locs.filter(l => l.unlocked).length;
 export function totalLevels(s) { return s.locs.reduce((a, l) => a + (l.unlocked ? l.level : 0), 0); }
 
 // Zlatno sjeme: ovisi o tome dokle smo stigli, koliko smo nadogradili i koliko dugo igramo
+const VALUE = [1, 2, 10, 80, 700, 7000, 8e4]; // koliko vrijedi jedinica resursa
+export function villageValue(s) { return (s.earned || []).reduce((a, e, i) => a + e * VALUE[i], 0); }
 export function seedBreakdown(s) {
   const stage = unlockedCount(s);
   const levels = totalLevels(s);
   const hours = s.runTime / 3600;
-  const a = stage >= 3 ? 0.6 * stage * stage : 0;
-  const b = levels / 12;
-  const c = 2.5 * Math.sqrt(hours);
-  const total = stage >= 3 ? Math.floor(a + b + c) : 0;
+  const ok = stage >= 3;
+  const a = ok ? stage * stage : 0;                                  // dokle je selo stiglo
+  const b = ok ? Math.pow(villageValue(s) / 1e4, 0.18) : 0;           // koliko je selo proizvelo
+  const c = ok ? 3 * Math.sqrt(hours) : 0;                           // koliko dugo traje proljeće
+  const total = Math.floor(a + b + c);
   return { stage, levels, hours, a: Math.floor(a), b: Math.floor(b), c: Math.floor(c), total };
 }
 
 // napreduj vrijeme (sekunde)
+export function gain(s, i, v) { s.res[i] += v; s.earned[i] += v; }
 export function advance(s, dt) {
-  for (let i = 0; i < LOCS.length; i++) s.res[i] += prodOf(s, i) * dt;
+  if (!s.earned) s.earned = RES.map(() => 0);
+  for (let i = 0; i < LOCS.length; i++) { const v = prodOf(s, i) * dt; s.res[i] += v; s.earned[i] += v; }
   s.runTime += dt;
 }
 
@@ -179,4 +187,11 @@ export function fmt(n) {
   while (n >= 1000 && k < SUF.length - 1) { n /= 1000; k++; }
   const d = n < 10 ? 2 : n < 100 ? 1 : 0;
   return (Math.floor(n * 10 ** d) / 10 ** d).toFixed(d).replace('.', ',') + SUF[k];
+}
+
+// broj + "zrno/zrna" (hrvatska množina)
+export function zrna(n) {
+  const a = Math.abs(n) % 100, b = a % 10;
+  const w = b === 1 && a !== 11 ? 'zrno' : (b >= 2 && b <= 4 && (a < 12 || a > 14)) ? 'zrna' : 'zrna';
+  return `${fmt(n)} ${w}`;
 }
