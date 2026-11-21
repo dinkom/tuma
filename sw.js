@@ -1,5 +1,5 @@
 // Tuma — service worker
-const VERSION = 'tuma-v1.4.0';
+const VERSION = 'tuma-v1.5.0';
 const CORE = [
   './',
   './assets/bg/front.webp',
@@ -67,6 +67,20 @@ const CORE = [
   './assets/night/tit_1.webp',
   './assets/night/tit_2.webp',
   './assets/night/tit_3.webp',
+  './fonts/alegreya-latin-400-italic.woff2',
+  './fonts/alegreya-latin-500-normal.woff2',
+  './fonts/alegreya-latin-700-normal.woff2',
+  './fonts/alegreya-latin-800-normal.woff2',
+  './fonts/alegreya-latin-ext-400-italic.woff2',
+  './fonts/alegreya-latin-ext-500-normal.woff2',
+  './fonts/alegreya-latin-ext-700-normal.woff2',
+  './fonts/alegreya-latin-ext-800-normal.woff2',
+  './fonts/alegreya-sc-latin-700-normal.woff2',
+  './fonts/alegreya-sc-latin-800-normal.woff2',
+  './fonts/alegreya-sc-latin-ext-700-normal.woff2',
+  './fonts/alegreya-sc-latin-ext-800-normal.woff2',
+  './fonts/uncial-antiqua-latin-400-normal.woff2',
+  './fonts/uncial-antiqua-latin-ext-400-normal.woff2',
   './assets/loc/badger_1.webp',
   './assets/loc/badger_2.webp',
   './assets/loc/badger_3.webp',
