@@ -1,5 +1,5 @@
 // Tuma — service worker
-const VERSION = 'tuma-v1.3.1';
+const VERSION = 'tuma-v1.3.2';
 const CORE = [
   './',
   './assets/bg/front.webp',
@@ -97,7 +97,8 @@ const CORE = [
 const MUSIC = 'tuma-music-v1';
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
+  // cache: 'reload' zaobilazi HTTP spremište preglednika, pa nova verzija uvijek povuče svježe slike
+  e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== VERSION && k !== MUSIC).map(k => caches.delete(k)))).then(() => self.clients.claim()));
