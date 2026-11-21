@@ -2,7 +2,7 @@
 import * as E from './economy.js';
 import { Music, Sfx } from './audio.js';
 
-const VERSION = '1.2.0';
+const VERSION = '1.2.1';
 const SAVE_KEY = 'tuma-save-v2';
 const $ = (q, el = document) => el.querySelector(q);
 const icon = r => `assets/icon/${E.RES[r].id}.webp`;
@@ -168,13 +168,13 @@ function renderHud() {
 // ---------- karta sela ----------
 // položaj na livadi u koordinatama pozadinske slike (0–1): x = središte, y = dno, s = veličina (perspektiva)
 const SPOTS = [
-  { x: 0.33, y: 0.845, s: 1.0, side: 1 },   // jež
-  { x: 0.68, y: 0.84, s: 0.95, side: -1 }, // vjeverica
-  { x: 0.27, y: 0.715, s: 0.86, side: 1 },  // jazavac
-  { x: 0.68, y: 0.668, s: 0.8, side: -1 },  // lisica
-  { x: 0.58, y: 0.605, s: 0.72, side: 1 },  // medvjed
-  { x: 0.28, y: 0.578, s: 0.66, side: 1 },  // sova
-  { x: 0.78, y: 0.552, s: 0.6, side: -1 },  // sjenica
+  { x: 0.50, y: 0.835, s: 1.0, side: 1 },   // jež — sprijeda, travnati otok između putova
+  { x: 0.31, y: 0.775, s: 0.92, side: -1 }, // vjeverica — lijeva livada
+  { x: 0.76, y: 0.695, s: 0.85, side: -1 }, // jazavac — desno, uz krivinu puta
+  { x: 0.31, y: 0.680, s: 0.8, side: 1 },   // lisica — lijevo, ispod gornjeg puta
+  { x: 0.59, y: 0.650, s: 0.74, side: 1 },  // medvjed — središnja livada
+  { x: 0.40, y: 0.583, s: 0.66, side: -1 }, // sova — uz račvanje, pred drvećem
+  { x: 0.74, y: 0.566, s: 0.6, side: -1 },  // sjenica — kod velikog stabla
 ];
 // pretvara koordinate slike u piksele ekrana (pozadina je 'cover', poravnata dolje, srednji sloj ×1.10)
 function imgToScreen(ix, iy) {
@@ -213,7 +213,7 @@ function layoutMap() {
     const [X, Y, DH] = imgToScreen(sp.x, sp.y);
     const asp = nw / nh;
     let h = DH * 0.085 * sp.s, w = h * asp;
-    const maxW = Math.min(W, DH * 0.6) * 0.42 * sp.s;
+    const maxW = Math.min(W, DH * 0.6) * 0.36 * sp.s;
     if (w > maxW) { w = maxW; h = w / asp; }
     r.l.style.width = w + 'px'; r.l.style.height = h + 'px';
     r.b.style.left = X + 'px';
