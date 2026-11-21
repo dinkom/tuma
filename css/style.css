@@ -283,7 +283,7 @@ body.intro #hud, body.intro #village, body.intro #tabs, body.intro #buyMode { op
 
 /* ---------- karta sela ---------- */
 #map { position: fixed; inset: 0; z-index: 2; pointer-events: none; transition: opacity .45s ease; }
-#mapIn { position: absolute; left: 50%; top: 0; bottom: 0; width: min(100vw, 62vh); transform: translateX(-50%); }
+#mapIn { position: absolute; inset: 0; }
 #mapWrap { position: absolute; inset: 0; will-change: transform; }
 .mloc {
   position: absolute; transform: translateX(-50%); background: none; padding: 0;

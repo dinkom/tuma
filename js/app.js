@@ -2,7 +2,7 @@
 import * as E from './economy.js';
 import { Music, Sfx } from './audio.js';
 
-const VERSION = '1.1.3';
+const VERSION = '1.2.0';
 const SAVE_KEY = 'tuma-save-v2';
 const $ = (q, el = document) => el.querySelector(q);
 const icon = r => `assets/icon/${E.RES[r].id}.webp`;
@@ -166,16 +166,22 @@ function renderHud() {
 
 
 // ---------- karta sela ----------
-// položaj na livadi: x = središte (% širine), y = dno (% visine), s = veličina (perspektiva), side = strana životinje
+// položaj na livadi u koordinatama pozadinske slike (0–1): x = središte, y = dno, s = veličina (perspektiva)
 const SPOTS = [
-  { x: 28, y: 86, s: 1.0, side: 1 },
-  { x: 74, y: 82, s: 0.95, side: -1 },
-  { x: 50, y: 73, s: 0.88, side: 1 },
-  { x: 23, y: 67, s: 0.8, side: 1 },
-  { x: 77, y: 65, s: 0.78, side: -1 },
-  { x: 36, y: 58.5, s: 0.68, side: 1 },
-  { x: 67, y: 56, s: 0.64, side: -1 },
+  { x: 0.33, y: 0.845, s: 1.0, side: 1 },   // jež
+  { x: 0.68, y: 0.84, s: 0.95, side: -1 }, // vjeverica
+  { x: 0.27, y: 0.715, s: 0.86, side: 1 },  // jazavac
+  { x: 0.68, y: 0.668, s: 0.8, side: -1 },  // lisica
+  { x: 0.58, y: 0.605, s: 0.72, side: 1 },  // medvjed
+  { x: 0.28, y: 0.578, s: 0.66, side: 1 },  // sova
+  { x: 0.78, y: 0.552, s: 0.6, side: -1 },  // sjenica
 ];
+// pretvara koordinate slike u piksele ekrana (pozadina je 'cover', poravnata dolje, srednji sloj ×1.10)
+function imgToScreen(ix, iy) {
+  const W = innerWidth, H = innerHeight, k = Math.max(W / 1024, H / 1792);
+  const dw = 1024 * k, dh = 1792 * k, x0 = (W - dw) / 2, y0 = H - dh;
+  return [W / 2 + (x0 + ix * dw - W / 2) * 1.10, H / 2 + (y0 + iy * dh - H / 2) * 1.10, dh * 1.10];
+}
 const village = $('#village');
 const mapIn = $('#mapIn');
 const mapWrap = document.createElement('div');
@@ -199,30 +205,31 @@ sign.addEventListener('click', () => { const k = firstLocked(); if (k >= 0) open
 mapWrap.appendChild(sign);
 
 function layoutMap() {
-  const W = mapIn.clientWidth, H = mapIn.clientHeight;
+  const W = innerWidth;
   E.LOCS.forEach((L, i) => {
     const r = mapEls[i], sp = SPOTS[i];
     const nw = r.l.naturalWidth, nh = r.l.naturalHeight;
     if (!nw) return;
+    const [X, Y, DH] = imgToScreen(sp.x, sp.y);
     const asp = nw / nh;
-    let h = H * 0.11 * sp.s, w = h * asp;
-    const maxW = W * 0.42 * sp.s;
+    let h = DH * 0.085 * sp.s, w = h * asp;
+    const maxW = Math.min(W, DH * 0.6) * 0.42 * sp.s;
     if (w > maxW) { w = maxW; h = w / asp; }
     r.l.style.width = w + 'px'; r.l.style.height = h + 'px';
-    r.b.style.left = sp.x + '%';
-    r.b.style.top = (sp.y / 100 * H - h) + 'px';
-    r.b.style.zIndex = Math.round(sp.y);
-    const ah = Math.max(H * 0.06 * sp.s, h * 0.62);
+    r.b.style.left = X + 'px';
+    r.b.style.top = (Y - h) + 'px';
+    r.b.style.zIndex = Math.round(sp.y * 100);
+    const ah = Math.max(DH * 0.045 * sp.s, h * 0.62);
     r.a.style.height = ah + 'px';
     r.a.style.left = sp.side > 0 ? (w - ah * 0.25) + 'px' : (-ah * 0.5) + 'px';
     r.a.style.animationDelay = (-i * 0.7) + 's';
   });
   const k = firstLocked();
   if (k >= 0) {
-    const sp = SPOTS[k];
-    sign.style.left = sp.x + '%';
-    sign.style.top = (sp.y / 100 * H - 70) + 'px';
-    sign.style.zIndex = Math.round(sp.y);
+    const [X, Y] = imgToScreen(SPOTS[k].x, SPOTS[k].y);
+    sign.style.left = X + 'px';
+    sign.style.top = (Y - 70) + 'px';
+    sign.style.zIndex = Math.round(SPOTS[k].y * 100);
   }
 }
 function renderMap(force) {
