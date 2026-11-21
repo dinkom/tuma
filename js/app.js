@@ -2,12 +2,18 @@
 import * as E from './economy.js';
 import { Music, Sfx } from './audio.js';
 
-const VERSION = '1.2.1';
+const VERSION = '1.3.0';
 const SAVE_KEY = 'tuma-save-v2';
 const $ = (q, el = document) => el.querySelector(q);
 const icon = r => `assets/icon/${E.RES[r].id}.webp`;
 const locImg = (i, t) => `assets/loc/${E.LOCS[i].id}_${t}.webp`;
 const charImg = i => `assets/char/${E.LOCS[i].id}.webp`;
+// noćna svjetla (prozori, lampe) postoje samo za neke slike
+const LIGHTS = new Set(['badger_3', 'bear_3', 'fox_1', 'fox_2', 'fox_3', 'hedgehog_1', 'hedgehog_2', 'hedgehog_3', 'owl_1', 'owl_2', 'owl_3', 'squirrel_2', 'squirrel_3', 'tit_2', 'tit_3']);
+const lightImg = (i, t) => LIGHTS.has(`${E.LOCS[i].id}_${t}`) ? `assets/light/${E.LOCS[i].id}_${t}.webp` : '';
+const nightImg = (i, t) => `assets/night/${E.LOCS[i].id}_${t}.webp`;
+const nightChar = i => `assets/night/char_${E.LOCS[i].id}.webp`;
+function setLight(img, i, t) { const u = lightImg(i, t); img.style.visibility = u ? '' : 'hidden'; if (u) img.src = u; else img.removeAttribute('src'); }
 
 // ---------- stanje ----------
 let S = load();
@@ -61,8 +67,9 @@ const locEls = E.LOCS.map((L, i) => {
   el.dataset.i = i;
   el.innerHTML = `
     <div class="stage">
-      <button class="sprite" aria-label="${L.name}"><img alt=""></button>
+      <button class="sprite" aria-label="${L.name}"><img alt=""><img class="nt" alt=""><img class="lit" alt=""></button>
       <img class="animal" src="${charImg(i)}" alt="">
+      <img class="animal nt" src="${nightChar(i)}" alt="">
       <img class="silhouette" src="${charImg(i)}" alt="">
       <div class="lock">🔒</div>
     </div>
@@ -79,7 +86,7 @@ const locEls = E.LOCS.map((L, i) => {
     </div>`;
   list.appendChild(el);
   const r = {
-    el, sprite: $('.sprite', el), img: $('.sprite img', el), animal: $('.animal', el), lock: $('.lock', el),
+    el, sprite: $('.sprite', el), img: $('.sprite img', el), lit: $('.sprite .lit', el), nt: $('.sprite .nt', el), animalNt: $('.animal.nt', el), animal: $('.animal:not(.nt)', el), lock: $('.lock', el),
     lvl: $('.lvl', el), rate: $('.rate', el), barwrap: $('.barwrap', el), bar: $('.bar i', el), barlbl: $('.barlbl', el),
     up: $('.up', el), upL: $('.up .bl', el), upC: $('.up .costs', el),
     hire: $('.hire', el), hireC: $('.hire .costs', el),
@@ -110,9 +117,10 @@ function renderLocs() {
     if (!visible) return;
     r.el.classList.toggle('locked', !st.unlocked);
     const tier = st.unlocked ? E.tierOf(st.level) : 1;
-    if (tier !== r.tier) { r.img.src = locImg(i, tier); r.tier = tier; r.el.dataset.tier = tier; }
+    if (tier !== r.tier) { r.img.src = locImg(i, tier); r.nt.src = nightImg(i, tier); setLight(r.lit, i, tier); r.tier = tier; r.el.dataset.tier = tier; }
     r.lock.style.display = st.unlocked ? 'none' : '';
     r.animal.classList.toggle('waiting', !st.hired);
+    r.animalNt.classList.toggle('waiting', !st.hired);
     if (!st.unlocked) {
       r.lvl.textContent = '';
       r.rate.innerHTML = `Netko novi bi se mogao doseliti ovamo…`;
@@ -191,10 +199,10 @@ const mapEls = E.LOCS.map((L, i) => {
   const b = document.createElement('button');
   b.className = 'mloc';
   b.setAttribute('aria-label', L.name);
-  b.innerHTML = `<img class="l" alt=""><img class="a" src="${charImg(i)}" alt=""><span class="badge"></span>`;
+  b.innerHTML = `<img class="l" alt=""><img class="nt" alt=""><img class="lit" alt=""><img class="a" src="${charImg(i)}" alt=""><img class="a nt" src="${nightChar(i)}" alt=""><span class="badge"></span>`;
   b.addEventListener('click', () => openDetail(i));
   mapWrap.appendChild(b);
-  const r = { b, l: $('img.l', b), a: $('img.a', b), badge: $('.badge', b), tier: 0 };
+  const r = { b, l: $('img.l', b), lit: $('img.lit', b), nt: $('img.nt', b), a: $('img.a:not(.nt)', b), aNt: $('img.a.nt', b), badge: $('.badge', b), tier: 0 };
   r.l.addEventListener('load', () => layoutMap());
   return r;
 });
@@ -216,13 +224,17 @@ function layoutMap() {
     const maxW = Math.min(W, DH * 0.6) * 0.36 * sp.s;
     if (w > maxW) { w = maxW; h = w / asp; }
     r.l.style.width = w + 'px'; r.l.style.height = h + 'px';
+    r.lit.style.width = w + 'px'; r.lit.style.height = h + 'px';
+    r.nt.style.width = w + 'px'; r.nt.style.height = h + 'px';
     r.b.style.left = X + 'px';
     r.b.style.top = (Y - h) + 'px';
     r.b.style.zIndex = Math.round(sp.y * 100);
     const ah = Math.max(DH * 0.045 * sp.s, h * 0.62);
-    r.a.style.height = ah + 'px';
-    r.a.style.left = sp.side > 0 ? (w - ah * 0.25) + 'px' : (-ah * 0.5) + 'px';
-    r.a.style.animationDelay = (-i * 0.7) + 's';
+    for (const a of [r.a, r.aNt]) {
+      a.style.height = ah + 'px';
+      a.style.left = sp.side > 0 ? (w - ah * 0.25) + 'px' : (-ah * 0.5) + 'px';
+      a.style.animationDelay = (-i * 0.7) + 's';
+    }
   });
   const k = firstLocked();
   if (k >= 0) {
@@ -239,8 +251,8 @@ function renderMap(force) {
     r.b.style.display = st.unlocked ? '' : 'none';
     if (!st.unlocked) return;
     const t = E.tierOf(st.level);
-    if (t !== r.tier) { r.tier = t; r.l.src = locImg(i, t); relayout = true; }
-    r.a.style.display = st.hired ? '' : 'none';
+    if (t !== r.tier) { r.tier = t; r.l.src = locImg(i, t); r.nt.src = nightImg(i, t); setLight(r.lit, i, t); relayout = true; }
+    r.a.style.display = r.aNt.style.display = st.hired ? '' : 'none';
     const ready = E.canPay(S, E.upgradeCost(S, i, 1)) || (!st.hired && E.canPay(S, E.hireCost(S, i)));
     r.badge.classList.toggle('ready', ready);
   });

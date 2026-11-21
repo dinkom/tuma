@@ -113,7 +113,7 @@ body.night .layer { filter: saturate(.72) brightness(.92); }
 .loc[data-tier="3"] .sprite img { height: 170px; }
 .sprite.squish { animation: squish .16s ease; }
 @keyframes squish { 40% { transform: scale(.94, .9) translateY(3px); } }
-body.night .sprite { filter: drop-shadow(0 6px 10px rgba(0,0,20,.4)) brightness(.86) saturate(.9); }
+body.night .sprite { filter: drop-shadow(0 6px 10px rgba(0,0,20,.4)); }
 .animal {
   position: absolute; z-index: 2; bottom: -6px; height: 100px; pointer-events: none;
   filter: drop-shadow(0 5px 6px rgba(50,35,10,.3));
@@ -124,7 +124,8 @@ body.night .sprite { filter: drop-shadow(0 6px 10px rgba(0,0,20,.4)) brightness(
 .loc:nth-child(even) .animal { right: max(0px, calc(50% - 190px)); }
 .loc:nth-child(even) .animal { animation-delay: -1.3s; }
 .animal.waiting { opacity: .55; filter: grayscale(.6) brightness(1.05); animation: none; }
-body.night .animal { filter: drop-shadow(0 5px 6px rgba(0,0,20,.4)) brightness(.88); }
+body.night .animal.waiting:not(.nt) { opacity: 0; }
+body.night .animal { filter: drop-shadow(0 5px 6px rgba(0,0,20,.4)); }
 @keyframes bob { 50% { transform: translateY(-4px) scaleY(1.02); } }
 .loc.locked .sprite img { filter: grayscale(1) brightness(1.15) contrast(.7); opacity: .55; }
 .loc.locked .sprite { filter: none; }
@@ -301,7 +302,7 @@ body.intro #hud, body.intro #village, body.intro #tabs, body.intro #buyMode { op
 .mloc .badge.ready { opacity: 1; animation: hint 2.4s ease-in-out infinite; }
 @keyframes hint { 50% { transform: translate(-50%, -3px); } }
 .mloc:active { transform: translateX(-50%) scale(.96); }
-body.night .mloc { filter: drop-shadow(0 6px 8px rgba(0,0,20,.45)) brightness(.86) saturate(.9); }
+body.night .mloc { filter: drop-shadow(0 6px 8px rgba(0,0,20,.45)); }
 .msign {
   position: absolute; transform: translate(-50%, 0); pointer-events: auto;
   display: flex; flex-direction: column; align-items: center; gap: 4px; background: none;
@@ -337,3 +338,27 @@ body.view-map #buyMode { visibility: hidden; }
 .loc.locked .sprite img { display: none; }
 .loc.locked .silhouette { display: block; }
 .loc.locked .sprite { min-height: 120px; display: flex; align-items: flex-end; }
+
+/* ---------- noćna svjetla ---------- */
+.sprite { position: relative; }
+.sprite img.lit, .mloc img.lit {
+  position: absolute; left: 0; bottom: 0; pointer-events: none; opacity: 0;
+  transition: opacity 2.5s ease;
+}
+.mloc img.lit { top: 0; }
+/* noćne verzije slika (izrađene unaprijed) preko dnevnih */
+.sprite img.nt, .mloc img.nt:not(.a) { position: absolute; left: 0; top: 0; pointer-events: none; opacity: 0; transition: opacity 2.5s ease; }
+.sprite img.nt { top: auto; bottom: 0; }
+.animal, .mloc img.a { transition: opacity 2.5s ease; }
+.animal.nt, .mloc img.a.nt { opacity: 0; }
+body.night .animal:not(.nt), body.night .mloc img.a:not(.nt) { opacity: 0; }
+body.night .sprite img.nt, body.night .mloc img.nt, body.night .animal.nt, body.night .mloc img.a.nt { opacity: 1; }
+body.night .animal.nt.waiting { opacity: .55; }
+body.night .sprite img.lit, body.night .mloc img.lit {
+  opacity: 1;
+  filter: brightness(1.15) drop-shadow(0 0 3px rgba(255, 214, 110, .95)) drop-shadow(0 0 10px rgba(255, 180, 60, .65));
+  animation: flicker 5s ease-in-out infinite;
+}
+.mloc:nth-child(2n) img.lit { animation-delay: -1.7s; }
+.mloc:nth-child(3n) img.lit { animation-delay: -3.1s; }
+@keyframes flicker { 0%, 100% { opacity: 1; } 45% { opacity: .86; } 50% { opacity: .95; } 70% { opacity: .9; } }
