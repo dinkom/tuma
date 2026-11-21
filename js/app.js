@@ -2,7 +2,7 @@
 import * as E from './economy.js';
 import { Music, Sfx } from './audio.js';
 
-const VERSION = '1.1.0';
+const VERSION = '1.1.1';
 const SAVE_KEY = 'tuma-save-v2';
 const $ = (q, el = document) => el.querySelector(q);
 const icon = r => `assets/icon/${E.RES[r].id}.webp`;
@@ -205,14 +205,14 @@ function layoutMap() {
     const nw = r.l.naturalWidth, nh = r.l.naturalHeight;
     if (!nw) return;
     const asp = nw / nh;
-    let h = H * 0.15 * sp.s, w = h * asp;
-    const maxW = W * 0.56 * sp.s;
+    let h = H * 0.11 * sp.s, w = h * asp;
+    const maxW = W * 0.42 * sp.s;
     if (w > maxW) { w = maxW; h = w / asp; }
     r.l.style.width = w + 'px'; r.l.style.height = h + 'px';
     r.b.style.left = sp.x + '%';
     r.b.style.top = (sp.y / 100 * H - h) + 'px';
     r.b.style.zIndex = Math.round(sp.y);
-    const ah = Math.max(H * 0.075 * sp.s, h * 0.62);
+    const ah = Math.max(H * 0.06 * sp.s, h * 0.62);
     r.a.style.height = ah + 'px';
     r.a.style.left = sp.side > 0 ? (w - ah * 0.25) + 'px' : (-ah * 0.5) + 'px';
     r.a.style.animationDelay = (-i * 0.7) + 's';
@@ -221,7 +221,7 @@ function layoutMap() {
   if (k >= 0) {
     const sp = SPOTS[k];
     sign.style.left = sp.x + '%';
-    sign.style.top = (sp.y / 100 * H - 104) + 'px';
+    sign.style.top = (sp.y / 100 * H - 70) + 'px';
     sign.style.zIndex = Math.round(sp.y);
   }
 }
@@ -235,7 +235,6 @@ function renderMap(force) {
     if (t !== r.tier) { r.tier = t; r.l.src = locImg(i, t); relayout = true; }
     r.a.style.display = st.hired ? '' : 'none';
     const ready = E.canPay(S, E.upgradeCost(S, i, 1)) || (!st.hired && E.canPay(S, E.hireCost(S, i)));
-    r.badge.textContent = st.level;
     r.badge.classList.toggle('ready', ready);
   });
   const k = firstLocked();

@@ -293,12 +293,13 @@ body.intro #hud, body.intro #village, body.intro #tabs, body.intro #buyMode { op
 .mloc img.l { display: block; pointer-events: none; }
 .mloc img.a { position: absolute; bottom: -4px; pointer-events: none; animation: bob 2.8s ease-in-out infinite; transform-origin: bottom center; }
 .mloc .badge {
-  position: absolute; top: -6px; right: 4%; min-width: 26px; height: 26px; padding: 0 6px; border-radius: 13px;
-  background: rgba(255,248,234,.95); color: var(--bark); font-weight: 900; font-size: 12.5px;
-  display: grid; place-items: center; box-shadow: 0 2px 6px rgba(50,35,10,.3);
+  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  width: 0; height: 0; opacity: 0; transition: opacity .6s;
+  border-left: 7px solid transparent; border-right: 7px solid transparent; border-bottom: 10px solid #fff6c8;
+  filter: drop-shadow(0 0 4px rgba(255, 226, 120, .95)) drop-shadow(0 0 8px rgba(255, 210, 90, .6));
 }
-.mloc .badge.ready { background: linear-gradient(180deg, #8cc25a, #6f9a3e); color: #fff; }
-.mloc .badge.ready::after { content: '▲'; font-size: 9px; margin-left: 2px; }
+.mloc .badge.ready { opacity: 1; animation: hint 2.4s ease-in-out infinite; }
+@keyframes hint { 50% { transform: translate(-50%, -3px); } }
 .mloc:active { transform: translateX(-50%) scale(.96); }
 body.night .mloc { filter: drop-shadow(0 6px 8px rgba(0,0,20,.45)) brightness(.86) saturate(.9); }
 .msign {
@@ -306,11 +307,15 @@ body.night .mloc { filter: drop-shadow(0 6px 8px rgba(0,0,20,.45)) brightness(.8
   display: flex; flex-direction: column; align-items: center; gap: 4px; background: none;
 }
 .msign .post {
-  width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; font-size: 26px;
-  background: rgba(255,248,234,.9); box-shadow: 0 4px 12px rgba(50,35,10,.3); animation: breathe 2.6s ease-in-out infinite;
+  width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 14px;
+  background: rgba(255,248,234,.55); opacity: .55; transition: all .6s;
 }
-.msign.ready .post { background: linear-gradient(180deg, #a6d77a, #6f9a3e); box-shadow: 0 0 0 5px rgba(166,215,122,.45), 0 4px 12px rgba(50,35,10,.3); }
-.msign span { background: rgba(255,248,234,.92); border-radius: 10px; padding: 2px 9px; font-size: 12px; font-weight: 800; box-shadow: 0 2px 6px rgba(50,35,10,.2); }
+.msign span { display: none; background: rgba(255,248,234,.92); border-radius: 10px; padding: 2px 9px; font-size: 12px; font-weight: 800; box-shadow: 0 2px 6px rgba(50,35,10,.2); }
+.msign.ready .post {
+  width: 42px; height: 42px; font-size: 20px; opacity: 1; background: rgba(255,248,234,.95);
+  box-shadow: 0 0 10px 3px rgba(255, 226, 120, .75); animation: breathe 2.6s ease-in-out infinite;
+}
+.msign.ready span { display: block; }
 @keyframes breathe { 50% { transform: scale(1.07); } }
 body.view-detail #map { opacity: 0; }
 body.view-detail #map * { pointer-events: none !important; }
