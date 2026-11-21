@@ -2,7 +2,7 @@
 import * as E from './economy.js';
 import { Music, Sfx } from './audio.js';
 
-const VERSION = '1.3.2';
+const VERSION = '1.4.0';
 const SAVE_KEY = 'tuma-save-v2';
 const $ = (q, el = document) => el.querySelector(q);
 const icon = r => `assets/icon/${E.RES[r].id}.webp`;
@@ -703,6 +703,30 @@ $('#btnPlay').addEventListener('click', () => {
     setTimeout(() => toast('Dodiruj Gljivarnicu i skupljaj gljive!', icon(0)), 900);
   }
 });
+
+// ---------- instalacija (Android) ----------
+{
+  let deferred = null;
+  const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  const box = $('#installBox'), b1 = $('#btnInstall'), b2 = $('#btnInstall2'), hint = $('#installHint');
+  function refresh() {
+    b1.classList.toggle('hidden', !deferred || standalone());
+    box.classList.toggle('hidden', standalone());
+    b2.classList.toggle('hidden', !deferred);
+    hint.textContent = deferred ? '' : 'Za instalaciju u Chromeu otvori izbornik ⋮ i odaberi „Instaliraj aplikaciju” ili „Dodaj na početni zaslon”.';
+  }
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; refresh(); });
+  async function install() {
+    if (!deferred) return;
+    deferred.prompt();
+    try { await deferred.userChoice; } catch (e) {}
+    deferred = null; refresh();
+  }
+  b1.addEventListener('click', e => { e.stopPropagation(); install(); });
+  b2.addEventListener('click', install);
+  window.addEventListener('appinstalled', () => { deferred = null; refresh(); toast('Tuma je instalirana! 🌿', 'assets/icon/icon-192.png'); });
+  refresh();
+}
 
 // ---------- automatsko ažuriranje ----------
 if ('serviceWorker' in navigator) {

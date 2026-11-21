@@ -362,3 +362,12 @@ body.night .sprite img.lit, body.night .mloc img.lit {
 .mloc:nth-child(2n) img.lit { animation-delay: -1.7s; }
 .mloc:nth-child(3n) img.lit { animation-delay: -3.1s; }
 @keyframes flicker { 0%, 100% { opacity: 1; } 45% { opacity: .86; } 50% { opacity: .95; } 70% { opacity: .9; } }
+
+/* ---------- instalacija ---------- */
+.hidden { display: none !important; }
+button.install {
+  display: flex; align-items: center; gap: 8px; margin: 16px auto 0; padding: 8px 16px 8px 8px;
+  border-radius: 18px; background: rgba(255,248,234,.92); box-shadow: 0 4px 14px rgba(60,40,15,.25);
+  font-weight: 800; font-size: 15px; color: var(--bark);
+}
+button.install img { width: 32px; height: 32px; border-radius: 9px; }
