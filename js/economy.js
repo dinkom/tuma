@@ -35,7 +35,7 @@ const UP_GROWTH = 1.17;
 const UNLOCK = [0, 100, 3000, 1.5e5, 1e7, 1e9, 1.5e11];
 const HIRE = [15, 60, 300, 1500, 8000, 40000, 2e5];
 export const MILESTONES = [10, 25, 50, 75, 100, 150, 200, 250, 300, 400, 500, 750, 1000];
-export const TIERS = [1, 10, 25]; // razine od kojih se mijenja izgled
+export const TIERS = [1, 75, 200]; // razine od kojih se mijenja izgled (sporo, kroz više proljeća)
 
 export const RESEARCH = [
   { id: 'tap', name: 'Spretne šapice', desc: '+25% snaga dodira', base: 15, g: 1.9, max: 50 },
@@ -80,7 +80,7 @@ export function milestoneMult(level) {
   for (const t of MILESTONES) if (level >= t) m *= 2;
   return m;
 }
-export function tierOf(level) { return level >= 25 ? 3 : level >= 10 ? 2 : 1; }
+export function tierOf(level) { return level >= TIERS[2] ? 3 : level >= TIERS[1] ? 2 : 1; }
 export function nextMilestone(level) { return MILESTONES.find(t => t > level); }
 
 const lv = (s, i) => (s.locs[i].unlocked ? s.locs[i].level : 0);

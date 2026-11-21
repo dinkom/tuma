@@ -2,7 +2,7 @@
 import * as E from './economy.js';
 import { Music, Sfx } from './audio.js';
 
-const VERSION = '1.5.0';
+const VERSION = '1.5.1';
 const SAVE_KEY = 'tuma-save-v2';
 const $ = (q, el = document) => el.querySelector(q);
 const icon = r => `assets/icon/${E.RES[r].id}.webp`;
@@ -140,7 +140,7 @@ function renderLocs() {
     const prev = [0, ...E.MILESTONES].filter(m => m <= st.level).pop();
     if (nm) {
       r.bar.style.width = ((st.level - prev) / (nm - prev) * 100).toFixed(1) + '%';
-      r.barlbl.textContent = `Do razine ${nm}: proizvodnja ×2${(nm === 10 || nm === 25) ? ' i nova izgradnja' : ''}`;
+      r.barlbl.textContent = `Do razine ${nm}: proizvodnja ×2${(nm === E.TIERS[1] || nm === E.TIERS[2]) ? ' i nova izgradnja' : ''}`;
     }
     const k = upN(i);
     const c = E.upgradeCost(S, i, k);
