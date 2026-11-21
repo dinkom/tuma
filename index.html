@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#cfe7b0">
+<meta name="description" content="Tuma — ugodno šumsko selo">
+<title>Tuma</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icon/apple-touch-icon.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="intro">
+
+<div id="scene" aria-hidden="true">
+  <div class="layer" id="bgSky"></div>
+  <div class="layer" id="bgMid"></div>
+  <div class="layer" id="bgFront"></div>
+  <div id="nightTint"></div>
+  <div id="particles"></div>
+</div>
+
+<header id="hud">
+  <div id="chips"></div>
+  <div id="buyMode" role="group" aria-label="Količina">
+    <button data-m="1" class="on">×1</button><button data-m="10">×10</button><button data-m="max">MAX</button>
+  </div>
+</header>
+
+<main id="village">
+  <div id="locList"></div>
+  <div id="teaser"></div>
+</main>
+
+
+<nav id="tabs">
+  <button data-sheet="" class="on"><img class="ti" src="assets/icon/mushroom.webp" alt="">Selo</button>
+  <button data-sheet="research" id="tabResearch"><img class="ti" src="assets/icon/scroll.webp" alt="">Istraživanje</button>
+  <button data-sheet="spring" id="tabSpring"><img class="ti" src="assets/icon/seed.webp" alt="">Proljeće</button>
+  <button data-sheet="settings"><span class="ti gear">⚙</span>Postavke</button>
+</nav>
+
+<section class="sheet" id="sheet-research"><div class="sheetIn">
+  <h2>Knjižnica Sove Sofije</h2>
+  <p class="sub">Svici i pisma pretvaraju se u znanje koje pomaže cijelom selu.</p>
+  <div id="researchList"></div>
+</div></section>
+
+<section class="sheet" id="sheet-spring"><div class="sheetIn">
+  <h2>Novo proljeće</h2>
+  <p class="sub">Selo zaspi i probudi se iznova. Ono što ponese sa sobom je <b>zlatno sjeme</b> — trajni pojačivači koji ostaju zauvijek.</p>
+  <div id="springBox"></div>
+  <h3>Sjemenište <span id="seedBal"></span></h3>
+  <div id="shopList"></div>
+</div></section>
+
+<section class="sheet" id="sheet-settings"><div class="sheetIn">
+  <h2>Postavke</h2>
+  <label class="row">Glazba <input type="range" id="setMusic" min="0" max="1" step="0.05"></label>
+  <label class="row">Zvukovi <input type="checkbox" id="setSfx"></label>
+  <label class="row">Vibracija <input type="checkbox" id="setVib"></label>
+  <div class="row">Doba dana
+    <div class="seg" id="setTime"><button data-v="auto">Auto</button><button data-v="day">Dan</button><button data-v="night">Noć</button></div>
+  </div>
+  <p class="hint">Auto: noć je od 20 do 6 sati.</p>
+  <h3>Statistika</h3>
+  <div id="stats"></div>
+  <button class="danger" id="btnReset">Obriši sav napredak</button>
+  <p class="hint" id="ver"></p>
+</div></section>
+
+<div id="title">
+  <div class="titleIn">
+    <img src="assets/icon/icon-512.png" alt="" class="logo">
+    <h1>Tuma</h1>
+    <p>šumsko selo</p>
+    <button id="btnPlay">Igraj</button>
+  </div>
+</div>
+
+<div id="modal" class="hidden"><div class="modalIn"><div id="modalBody"></div><div class="modalBtns" id="modalBtns"></div></div></div>
+<div id="toasts"></div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
