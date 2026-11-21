@@ -2,7 +2,7 @@
 import * as E from './economy.js';
 import { Music, Sfx } from './audio.js';
 
-const VERSION = '1.1.2';
+const VERSION = '1.1.3';
 const SAVE_KEY = 'tuma-save-v2';
 const $ = (q, el = document) => el.querySelector(q);
 const icon = r => `assets/icon/${E.RES[r].id}.webp`;
@@ -272,22 +272,29 @@ $('#dNext').addEventListener('click', () => stepDetail(1));
 // dulji dodir na pozadinu (ne na lokaciju ili kartu) vraća na selo
 {
   let timer = null, start = null;
-  const cancel = () => { clearTimeout(timer); timer = null; };
-  village.addEventListener('pointerdown', e => {
-    if (view !== 'detail' || e.target.closest('.sprite, .plate, button')) return;
-    start = [e.clientX, e.clientY];
+  const cancel = () => { clearTimeout(timer); timer = null; start = null; };
+  const begin = (target, x, y) => {
+    if (view !== 'detail' || target.closest('.sprite, .plate, button')) return;
     cancel();
+    start = [x, y];
     timer = setTimeout(() => {
       timer = null;
-      if (S.settings.vib && navigator.vibrate) navigator.vibrate(12);
+      if (S.settings.vib && navigator.vibrate) navigator.vibrate(15);
       showMap();
-    }, 550);
-  });
-  village.addEventListener('pointermove', e => {
-    if (timer && start && Math.hypot(e.clientX - start[0], e.clientY - start[1]) > 12) cancel();
-  });
-  ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => village.addEventListener(ev, cancel));
+    }, 500);
+  };
+  const move = (x, y) => { if (timer && start && Math.hypot(x - start[0], y - start[1]) > 14) cancel(); };
+  // dodir (Android)
+  village.addEventListener('touchstart', e => { if (e.touches.length === 1) begin(e.target, e.touches[0].clientX, e.touches[0].clientY); else cancel(); }, { passive: true });
+  village.addEventListener('touchmove', e => move(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+  village.addEventListener('touchend', cancel, { passive: true });
+  village.addEventListener('touchcancel', cancel, { passive: true });
+  // miš (računalo)
+  village.addEventListener('mousedown', e => begin(e.target, e.clientX, e.clientY));
+  village.addEventListener('mousemove', e => move(e.clientX, e.clientY));
+  village.addEventListener('mouseup', cancel);
   village.addEventListener('scroll', cancel, { passive: true });
+  village.addEventListener('contextmenu', e => e.preventDefault());
 }
 // povlačenje lijevo/desno u detalju
 {
@@ -678,6 +685,23 @@ $('#btnPlay').addEventListener('click', () => {
   }
 });
 
+// ---------- automatsko ažuriranje ----------
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  let reloading = false;
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    // nova verzija je preuzela: učitaj je odmah (samo ako je postojala stara)
+    if (!hadController || reloading) return;
+    reloading = true;
+    save();
+    location.reload();
+  });
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' });
+      reg.update();
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) reg.update(); });
+      setInterval(() => reg.update(), 10 * 60 * 1000);
+    } catch (e) {}
+  });
 }

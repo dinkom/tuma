@@ -1,5 +1,5 @@
 // Tuma — service worker
-const VERSION = 'tuma-v1.1.2';
+const VERSION = 'tuma-v1.1.3';
 const CORE = [
   './',
   './assets/bg/front.webp',
@@ -73,8 +73,18 @@ self.addEventListener('fetch', e => {
     }));
     return;
   }
+  // kod i stranica: uvijek prvo s mreže (da se nova verzija odmah vidi), spremljeno samo kad nema mreže
+  const isCode = e.request.mode === 'navigate' || /\.(html|js|css|webmanifest)$/.test(url.pathname) || url.pathname.endsWith('/');
+  if (isCode) {
+    e.respondWith(fetch(e.request, { cache: 'no-store' }).then(res => {
+      if (res.ok) { const copy = res.clone(); caches.open(VERSION).then(c => c.put(e.request, copy)); }
+      return res;
+    }).catch(() => caches.match(e.request, { ignoreSearch: true }).then(hit => hit || caches.match('./'))));
+    return;
+  }
+  // slike: iz spremišta, a ako ih nema, s mreže
   e.respondWith(caches.match(e.request, { ignoreSearch: true }).then(hit => hit || fetch(e.request).then(res => {
     if (res.ok) { const copy = res.clone(); caches.open(VERSION).then(c => c.put(e.request, copy)); }
     return res;
-  })).catch(() => caches.match('./')));
+  })));
 });
