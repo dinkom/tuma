@@ -1,5 +1,5 @@
 // Tuma — service worker
-const VERSION = 'tuma-v1.5.3';
+const VERSION = 'tuma-v1.6.0';
 const CORE = [
   './',
   './assets/bg/front.webp',

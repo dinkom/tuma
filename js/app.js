@@ -2,7 +2,7 @@
 import * as E from './economy.js';
 import { Music, Sfx } from './audio.js';
 
-const VERSION = '1.5.3';
+const VERSION = '1.6.0';
 const SAVE_KEY = 'tuma-save-v2';
 const $ = (q, el = document) => el.querySelector(q);
 const icon = r => `assets/icon/${E.RES[r].id}.webp`;
@@ -24,6 +24,7 @@ function load() {
       const s = JSON.parse(raw);
       const base = E.newRun(null);
       // popuni eventualno nove ključeve
+      if (!s.gameStart) s.gameStart = s.runStart || Date.now();
       return { ...base, ...s, research: { ...base.research, ...s.research }, shop: { ...base.shop, ...s.shop }, settings: { ...base.settings, ...s.settings } };
     }
   } catch (e) { console.warn('save', e); }
@@ -391,6 +392,7 @@ function doUpgrade(i) {
   if (!E.pay(S, E.upgradeCost(S, i, k))) return;
   st.level += k;
   sfx.buy();
+  checkAllMax();
   const tierAfter = E.tierOf(st.level);
   const crossed = E.MILESTONES.filter(m => m > before && m <= st.level);
   if (tierAfter !== tierBefore) {
@@ -403,6 +405,37 @@ function doUpgrade(i) {
   }
   dirty = true;
 }
+// čestitka kad su sve lokacije na razini 200 (jednom zauvijek)
+const GOAL = 200;
+function checkAllMax() {
+  if (S.seen.allMax || !S.locs.every(l => l.unlocked && l.level >= GOAL)) return;
+  S.seen.allMax = { at: Date.now(), taps: S.taps };
+  save();
+  setTimeout(showAllMax, 700);
+}
+function showAllMax() {
+  const done = S.seen.allMax;
+  if (!done) return;
+  let sec = Math.max(0, Math.floor((done.at - S.gameStart) / 1000));
+  const d = Math.floor(sec / 86400); sec %= 86400;
+  const h = Math.floor(sec / 3600); sec %= 3600;
+  const m = Math.floor(sec / 60);
+  const pl = (n, one, few, many) => { const a = n % 100, b = n % 10; return b === 1 && a !== 11 ? one : (b >= 2 && b <= 4 && (a < 12 || a > 14)) ? few : many; };
+  const parts = [];
+  if (d) parts.push(`<b>${d}</b> ${pl(d, 'dan', 'dana', 'dana')}`);
+  if (h || d) parts.push(`<b>${h}</b> ${pl(h, 'sat', 'sata', 'sati')}`);
+  parts.push(`<b>${m}</b> ${pl(m, 'minutu', 'minute', 'minuta')}`);
+  const t = done.taps;
+  const time = parts.length > 1 ? parts.slice(0, -1).join(', ') + ' i ' + parts[parts.length - 1] : parts[0];
+  sfx.big();
+  modal(`<div class="allmax">${E.LOCS.map((_, i) => `<img src="${charImg(i)}" alt="">`).join('')}</div>
+    <h3>Cijelo selo je izgrađeno!</h3>
+    <p>Svih sedam mjesta doseglo je razinu ${GOAL}. Šuma nikad nije bila ljepša.</p>
+    <p class="allmaxStats">Trebalo vam je ${time}<br>i <b>${t.toLocaleString('hr-HR')}</b> ${pl(t, 'dodir', 'dodira', 'dodira')}.</p>
+    <p class="hint">Hvala svim stanovnicima Tume. 🌿</p>`, [['Hura!', '']]);
+  for (let k = 0; k < 4; k++) setTimeout(() => sparkles($('#modal .modalIn'), 26), k * 350);
+}
+
 function doHire(i) {
   if (!E.pay(S, E.hireCost(S, i))) return;
   S.locs[i].hired = true;
@@ -534,7 +567,8 @@ function renderSettings() {
   $('#setVib').checked = S.settings.vib;
   document.querySelectorAll('#setTime button').forEach(b => b.classList.toggle('on', b.dataset.v === S.settings.time));
   const rt = S.runTime / 3600;
-  $('#stats').innerHTML = `Dodira: <b>${E.fmt(S.taps)}</b><br>Ovo proljeće traje: <b>${Math.floor(rt)} h ${Math.floor((rt % 1) * 60)} min</b><br>Proljeća: <b>${S.prestiges || 0}</b><br>Ukupno zlatnog sjemena: <b>${E.zrna(S.seedsTotal || 0)}</b>`;
+  $('#stats').innerHTML = `Dodira: <b>${E.fmt(S.taps)}</b><br>Ovo proljeće traje: <b>${Math.floor(rt)} h ${Math.floor((rt % 1) * 60)} min</b><br>Proljeća: <b>${S.prestiges || 0}</b><br>Ukupno zlatnog sjemena: <b>${E.zrna(S.seedsTotal || 0)}</b>${S.seen.allMax ? '<br><button class="btn hire" id="btnAllMax" style="margin-top:10px;width:100%">🏆 Pogledaj čestitku</button>' : ''}`;
+  const bm = $('#btnAllMax'); if (bm) bm.onclick = showAllMax;
   $('#ver').textContent = 'Tuma ' + VERSION;
 }
 $('#setMusic').addEventListener('input', e => { S.settings.music = +e.target.value; music.setVolume(S.settings.music); });

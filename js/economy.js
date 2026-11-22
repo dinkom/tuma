@@ -65,6 +65,7 @@ export function newRun(state, now = Date.now()) {
     seedsTotal: state?.seedsTotal || 0,
     prestiges: state?.prestiges || 0,
     runStart: now,
+    gameStart: state?.gameStart || now,   // početak cijele igre (ostaje kroz sva proljeća)
     runTime: 0,           // sekunde u ovom proljeću (uključujući odsutnost)
     lastTick: now,
     taps: state?.taps || 0,

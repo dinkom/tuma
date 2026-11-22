@@ -535,3 +535,9 @@ button { font-family: inherit; }
 .card .txt small, .hint { font-size: 13.5px; }
 .brk { font-size: 15px; }
 #stats { font-size: 15px; }
+
+/* čestitka */
+.allmax { display: flex; justify-content: center; align-items: flex-end; flex-wrap: wrap; gap: 2px; margin-bottom: 6px; }
+.allmax img { height: 44px; animation: bob 2.4s ease-in-out infinite; }
+.allmax img:nth-child(2n) { animation-delay: -1.2s; }
+.allmaxStats { font-size: 17px; line-height: 1.5; margin: 12px 0 !important; }
