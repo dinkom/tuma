@@ -29,16 +29,16 @@ export const LOCS = [
 // rod: g(loc, 'narastao', 'narasla')
 export const byG = (x, m, f) => (x === 'f' ? f : m);
 
-const PROD = [1, 1, 1, 1, 1, 1, 1];          // po razini u sekundi
+const PROD = [2, 2, 2, 2, 2, 2, 2];          // po razini u sekundi
 const UP_BASE = [5, 8, 12, 18, 27, 40, 60];   // osnovna cijena nadogradnje
 const UP_GROWTH = 1.17;
-const UNLOCK = [0, 100, 3000, 1.5e5, 1e7, 1e9, 1.5e11];
+const UNLOCK = [0, 100, 3000, 1.5e5, 3e7, 3e10, 3e13];
 const HIRE = [15, 60, 300, 1500, 8000, 40000, 2e5];
 export const MILESTONES = [10, 25, 50, 75, 100, 150, 200, 250, 300, 400, 500, 750, 1000];
 export const TIERS = [1, 75, 200]; // razine od kojih se mijenja izgled (sporo, kroz više proljeća)
 
 export const RESEARCH = [
-  { id: 'tap', name: 'Spretne šapice', desc: '+25% snaga dodira', base: 15, g: 1.9, max: 50 },
+  { id: 'tap', name: 'Spretne šapice', desc: '+25% dodir i samostalno skupljanje', base: 15, g: 1.9, max: 50 },
   { id: 'prod', name: 'Marljivo selo', desc: '+10% sva proizvodnja', base: 25, g: 2.0, max: 50 },
   { id: 'cellar', name: 'Dublji podrumi', desc: '+1 h zarade dok te nema', base: 20, g: 2.0, max: 10 },
   { id: 'mail', name: 'Brzi glasnici', desc: '+15% automatsko skupljanje', base: 30, g: 2.1, max: 50, letters: true },
@@ -46,7 +46,7 @@ export const RESEARCH = [
 
 export const SHOP = [
   { id: 'soil', name: 'Plodno tlo', desc: 'Sva proizvodnja ×1,5 (množi se), zauvijek', base: 3, g: 1.6, max: 200 },
-  { id: 'paws', name: 'Jake šape', desc: 'Snaga dodira ×1,5 (množi se), zauvijek', base: 2, g: 1.6, max: 200 },
+  { id: 'paws', name: 'Jake šape', desc: 'Dodir i samostalno skupljanje ×1,5 (množi se), zauvijek', base: 2, g: 1.6, max: 200 },
   { id: 'cellar', name: 'Velika smočnica', desc: '+2 h zarade dok te nema', base: 3, g: 1.8, max: 6 },
   { id: 'dawn', name: 'Rano buđenje', desc: 'Novo proljeće počinje s još jednom otvorenom lokacijom', base: 8, g: 3, max: 2 },
   { id: 'helpers', name: 'Stari prijatelji', desc: '−20% cijena zapošljavanja', base: 4, g: 2.0, max: 4 },
@@ -99,7 +99,8 @@ export function offlineCapHours(s) {
 export function prodOf(s, i) {
   const L = s.locs[i];
   if (!L.unlocked || !L.hired) return 0;
-  return PROD[i] * L.level * milestoneMult(L.level) * globalMult(s) * autoMult(s);
+  // samostalno skupljanje raste s istim pojačivačima kao i dodir, pa ne zaostaje za njim
+  return PROD[i] * L.level * milestoneMult(L.level) * globalMult(s) * autoMult(s) * tapMult(s);
 }
 export function tapOf(s, i) {
   const L = s.locs[i];
